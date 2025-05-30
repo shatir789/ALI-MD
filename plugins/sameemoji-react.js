@@ -1,8 +1,6 @@
-require('dotenv').config();
-
 module.exports = {
   name: 'sameemoji-react',
-  description: 'Auto react with same emoji as in message',
+  description: 'Auto react with same emoji in message',
   type: 'auto',
   async onMessage(m, conn) {
     try {
@@ -18,7 +16,6 @@ module.exports = {
 
       const emojiRegex = /[\p{Emoji}\u200d]+/gu;
       const emojis = text.match(emojiRegex);
-
       if (!emojis || emojis.length === 0) return;
 
       const emoji = emojis[0];
@@ -30,9 +27,9 @@ module.exports = {
         }
       });
 
-      console.log(`✅ Reacted with emoji: ${emoji}`);
+      console.log(`✅ SAME_EMOJI reacted with: ${emoji}`);
     } catch (err) {
-      console.error('❌ sameemoji-react error:', err);
+      console.error('❌ SAME_EMOJI_REACT error:', err);
     }
   }
 };
