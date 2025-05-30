@@ -1,40 +1,38 @@
 require('dotenv').config();
-const { cmd } = require('../lib'); // for ALI-MD command registration
 
-cmd({
-  pattern: 'sameemoji', // just a dummy trigger
-  desc: 'Auto react with same emoji in message',
-  type: 'fun',
-  fromMe: false
-}, async (message, match, m, conn) => {
-    // This block runs when command is triggered, not auto.
-    await message.send('*✅ SAME_EMOJI_REACT plugin loaded successfully!*');
-});
-
-// ========== Auto Reaction ==========
-conn.ev.on('messages.upsert', async ({ messages }) => {
+module.exports = {
+  name: 'sameemoji-react',
+  description: 'Auto react with same emoji as in message',
+  type: 'auto',
+  async onMessage(m, conn) {
     try {
-        const m = messages[0];
-        if (!m.message || m.key.fromMe || !!m.message?.reactionMessage) return;
-        if (process.env.SAME_EMOJI_REACT?.toLowerCase() !== 'true') return;
+      if (process.env.SAME_EMOJI_REACT?.toLowerCase() !== 'true') return;
+      if (!m.message || m.key.fromMe || !!m.message?.reactionMessage) return;
 
-        const text = m?.body || m?.text || m?.caption || m?.message?.conversation || '';
-        const emojiRegex = /[\p{Emoji}\u200d]+/gu;
-        const emojis = text.match(emojiRegex);
+      const text =
+        m.message?.conversation ||
+        m.message?.extendedTextMessage?.text ||
+        m.message?.imageMessage?.caption ||
+        m.message?.videoMessage?.caption ||
+        m.body || m.text || '';
 
-        if (!emojis || emojis.length === 0) return;
+      const emojiRegex = /[\p{Emoji}\u200d]+/gu;
+      const emojis = text.match(emojiRegex);
 
-        const chosenEmoji = emojis[0];
+      if (!emojis || emojis.length === 0) return;
 
-        await conn.sendMessage(m.key.remoteJid, {
-            react: {
-                text: chosenEmoji,
-                key: m.key
-            }
-        });
+      const emoji = emojis[0];
 
-        console.log(`✅ Reacted with "${chosenEmoji}" to message.`);
+      await conn.sendMessage(m.key.remoteJid, {
+        react: {
+          text: emoji,
+          key: m.key
+        }
+      });
+
+      console.log(`✅ Reacted with emoji: ${emoji}`);
     } catch (err) {
-        console.error('❌ Auto React Error:', err);
+      console.error('❌ sameemoji-react error:', err);
     }
-});
+  }
+};
